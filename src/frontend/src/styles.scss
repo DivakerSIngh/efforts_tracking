@@ -1,0 +1,316 @@
+@use '@angular/material' as mat;
+
+html {
+  @include mat.theme((
+    color: (
+      primary: mat.$azure-palette,
+      tertiary: mat.$cyan-palette,
+    ),
+    typography: Roboto,
+    density: -2,
+  ));
+}
+
+/* ── Design Tokens ───────────────────────────────────────── */
+:root {
+  /* Brand */
+  --primary:        #6366f1;
+  --primary-dark:   #4f46e5;
+  --primary-light:  #818cf8;
+  --primary-50:     #eef2ff;
+  --primary-100:    #e0e7ff;
+
+  /* Semantic */
+  --accent:         #06b6d4;
+  --success:        #10b981;
+  --warning:        #f59e0b;
+  --danger:         #ef4444;
+  --success-bg:     #ecfdf5;
+  --warning-bg:     #fffbeb;
+  --danger-bg:      #fef2f2;
+
+  /* Surfaces — fully light */
+  --sidebar-bg:       #141C35;
+  --sidebar-border:   rgba(255,255,255,0.08);
+  --sidebar-hover:    rgba(255,255,255,0.07);
+  --sidebar-active-bg:rgba(99,102,241,0.22);
+  --sidebar-active-tx:#a5b4fc;
+
+  --surface:        #ffffff;
+  --surface-alt:    #f9fafb;
+  --surface-hover:  #f3f4f6;
+  --border:         #e5e7eb;
+  --border-focus:   #6366f1;
+
+  /* Typography */
+  --text-primary:   #111827;
+  --text-secondary: #6b7280;
+  --text-muted:     #9ca3af;
+
+  /* Elevation */
+  --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.08), 0 4px 6px rgba(0,0,0,0.04);
+  --shadow-xl: 0 20px 25px rgba(0,0,0,0.1), 0 8px 10px rgba(0,0,0,0.04);
+
+  /* Shape */
+  --radius-sm: 6px;
+  --radius:    10px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  /* Motion */
+  --ease:       cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring:cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration:   180ms;
+  --transition: var(--duration) var(--ease);
+}
+
+/* ── Reset ───────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: var(--surface-alt);
+  color: var(--text-primary);
+}
+
+/* ── Scrollbar ───────────────────────────────────────────── */
+::-webkit-scrollbar        { width: 5px; height: 5px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: rgba(0,0,0,0.18); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.3); }
+
+/* ── Animation keyframes ─────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ── Page enter animation ────────────────────────────────── */
+router-outlet + * {
+  animation: fadeInUp 0.3s var(--ease) both;
+}
+
+/* ── Material card overrides ─────────────────────────────── */
+.mat-mdc-card {
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+  border: 1px solid var(--border) !important;
+  background: var(--surface) !important;
+}
+
+/* Primary button — indigo gradient */
+.mat-mdc-raised-button.mat-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+  box-shadow: 0 4px 12px rgba(99,102,241,0.35) !important;
+  transition: transform var(--transition), box-shadow var(--transition) !important;
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(99,102,241,0.45) !important;
+  }
+  &:active { transform: translateY(0); }
+}
+
+/* Stroked button */
+.mat-mdc-outlined-button {
+  border-color: var(--border) !important;
+  &:hover { background: var(--surface-hover) !important; }
+}
+
+/* Form fields — clean light style */
+.mat-mdc-form-field {
+  .mdc-notched-outline__leading,
+  .mdc-notched-outline__notch,
+  .mdc-notched-outline__trailing {
+    border-color: var(--border) !important;
+  }
+  &:hover .mdc-notched-outline__leading,
+  &:hover .mdc-notched-outline__notch,
+  &:hover .mdc-notched-outline__trailing {
+    border-color: #9ca3af !important;
+  }
+  &.mat-focused .mdc-notched-outline__leading,
+  &.mat-focused .mdc-notched-outline__notch,
+  &.mat-focused .mdc-notched-outline__trailing {
+    border-color: var(--primary) !important;
+    border-width: 2px !important;
+  }
+}
+
+/* Tables */
+.mat-mdc-table {
+  background: transparent !important;
+  border-collapse: collapse !important;
+  border-spacing: 0;
+  width: 100%;
+
+  th.mat-header-cell {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    background: #f8fafc;
+    border: 1px solid var(--border) !important;
+    padding: 10px 14px;
+    white-space: nowrap;
+    text-align: left !important;
+  }
+
+  td.mat-cell {
+    border: 1px solid var(--border) !important;
+    padding: 9px 14px;
+    font-size: 0.8rem;
+    color: var(--text-primary);
+    text-align: left !important;
+  }
+
+  td.mat-footer-cell {
+    border: 1px solid var(--border) !important;
+    text-align: left !important;
+  }
+
+  /* Even / odd zebra rows */
+  tr.mat-mdc-row:nth-child(odd)  { background: #ffffff; }
+  tr.mat-mdc-row:nth-child(even) { background: #f9fafb; }
+
+  tr.mat-mdc-row {
+    transition: background var(--transition);
+    &:hover { background: var(--primary-50) !important; }
+    &:last-child td.mat-cell { border-bottom: 1px solid var(--border) !important; }
+  }
+}
+
+/* Progress bar */
+.mat-mdc-progress-bar {
+  --mdc-linear-progress-active-indicator-color: var(--primary);
+}
+
+/* Snackbar */
+.mat-mdc-snack-bar-container {
+  border-radius: var(--radius) !important;
+}
+
+/* ── Utility classes ─────────────────────────────────────── */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+
+  h2, .page-title {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.025em;
+    margin: 0;
+  }
+}
+
+.section-card {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  padding: 20px 24px;
+}
+
+.chip-active {
+  background: var(--success-bg) !important;
+  color: var(--success) !important;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+.chip-inactive {
+  background: var(--danger-bg) !important;
+  color: var(--danger) !important;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 56px 24px;
+  color: var(--text-muted);
+
+  mat-icon {
+    font-size: 2.5rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    color: var(--border);
+  }
+
+  p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+}
+
+/* Stagger children animation */
+.stagger > * {
+  animation: fadeInUp 0.3s var(--ease) both;
+  @for $i from 1 through 8 {
+    &:nth-child(#{$i}) { animation-delay: #{($i - 1) * 60}ms; }
+  }
+}
+
+/* ── iPhone-style dialog ─────────────────────────────────── */
+.iphone-dialog .mat-mdc-dialog-container {
+  border-radius: 20px !important;
+  overflow: hidden;
+//   box-shadow: 0 24px 48px rgba(0,0,0,0.18), 0 8px 16px rgba(0,0,0,0.1) !important;
+  max-width: 440px !important;
+  padding: 20px 24px 16px !important;
+}
+
+.iphone-dialog .mat-mdc-dialog-surface {
+  border-radius: 20px !important;
+}
+
+/* Paginator compact */
+.mat-mdc-paginator {
+  border-top: 1px solid var(--border);
+  background: #f8fafc !important;
+  font-size: 0.78rem;
+}
+
+* {
+    font-family: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+}
+

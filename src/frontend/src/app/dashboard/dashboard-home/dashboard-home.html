@@ -1,0 +1,139 @@
+<div class="dashboard-container">
+
+  <!-- Page Header -->
+  <div class="page-hero">
+    <div class="page-hero-text">
+      <h2>My Dashboard</h2>
+      <p>Your monthly work summary, earnings, and project activity.</p>
+    </div>
+  </div>
+
+  <!-- Filter bar (matching report page style) -->
+  <div class="filter-bar">
+    <div class="filter-select-wrap">
+      <div class="filter-label">Month</div>
+      <select class="filter-select" [(ngModel)]="selectedMonth" (change)="onFilterChange()">
+        <option *ngFor="let m of months" [ngValue]="m.value">{{ m.label }}</option>
+      </select>
+    </div>
+    <div class="filter-select-wrap filter-year">
+      <div class="filter-label">Year</div>
+      <select class="filter-select" [(ngModel)]="selectedYear" (change)="onFilterChange()">
+        <option *ngFor="let y of years" [ngValue]="y">{{ y }}</option>
+      </select>
+    </div>
+    <div class="filter-actions">
+      <button class="btn-filter-search" (click)="onFilterChange()">
+        <mat-icon>search</mat-icon>
+        SEARCH
+      </button>
+      <button class="btn-filter-reset" (click)="resetFilter()" title="Reset to current month">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <mat-progress-bar *ngIf="loading" mode="indeterminate" class="page-loader"></mat-progress-bar>
+
+  <ng-container *ngIf="summary">
+
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+
+      <mat-card class="stat-card hours-card">
+        <mat-card-content>
+          <div class="card-inner">
+            <div class="card-icon-wrap"><mat-icon>schedule</mat-icon></div>
+            <div class="card-body">
+              <div class="stat-value">{{ summary.total_hours | number:'1.1-1' }}</div>
+              <div class="stat-label">Total Hours</div>
+              <div class="stat-sub">{{ getMonthName(summary.month) }} {{ summary.year }}</div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card rate-card">
+        <mat-card-content>
+          <div class="card-inner">
+            <div class="card-icon-wrap"><mat-icon>payments</mat-icon></div>
+            <div class="card-body">
+              <div class="stat-value">₹{{ summary.hourly_rate | number:'1.2-2' }}</div>
+              <div class="stat-label">Hourly Rate</div>
+              <div class="stat-sub" *ngIf="summary.fixed_amount > 0">
+                + ₹{{ summary.fixed_amount | number:'1.2-2' }} fixed
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card earnings-card">
+        <mat-card-content>
+          <div class="card-inner">
+            <div class="card-icon-wrap"><mat-icon>account_balance_wallet</mat-icon></div>
+            <div class="card-body">
+              <div class="stat-value">₹{{ totalPaymentLabel }}</div>
+              <div class="stat-label">Total Earnings</div>
+              <div class="stat-sub">
+                {{ summary.total_hours | number:'1.1-1' }}h × ₹{{ summary.hourly_rate | number:'1.2-2' }}
+                <ng-container *ngIf="summary.fixed_amount > 0">
+                  + ₹{{ summary.fixed_amount | number:'1.2-2' }}
+                </ng-container>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+    </div>
+
+    <!-- Charts Row -->
+    <div class="charts-row">
+
+      <!-- Monthly trend bar chart -->
+      <mat-card class="chart-card" *ngIf="trend.length">
+        <mat-card-content>
+          <div class="chart-header">
+            <div class="section-title">
+              <mat-icon>bar_chart</mat-icon>
+              <span>Monthly Hours Trend</span>
+            </div>
+            <span class="chart-sub">Last 12 months</span>
+          </div>
+          <div class="chart-canvas-wrap">
+            <canvas #monthlyChartRef></canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Project breakdown doughnut chart -->
+      <mat-card class="chart-card" *ngIf="summary.project_breakdown?.length">
+        <mat-card-content>
+          <div class="chart-header">
+            <div class="section-title">
+              <mat-icon>donut_large</mat-icon>
+              <span>Project Breakdown</span>
+            </div>
+            <span class="chart-sub">{{ getMonthName(summary.month) }} {{ summary.year }}</span>
+          </div>
+          <div class="chart-canvas-wrap doughnut-wrap">
+            <canvas #projectChartRef></canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="!summary.project_breakdown?.length" class="no-data">
+      <mat-icon>inbox</mat-icon>
+      <p>No timesheet entries for {{ getMonthName(summary.month) }} {{ summary.year }}.</p>
+      <a mat-stroked-button color="primary" routerLink="/timesheet">Add Entries</a>
+    </div>
+
+  </ng-container>
+
+</div>
+
+

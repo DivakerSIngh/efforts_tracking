@@ -1,0 +1,40 @@
+<header class="app-header">
+  <button class="menu-btn" mat-icon-button (click)="onMenuToggle()" aria-label="Toggle menu">
+    <mat-icon>menu</mat-icon>
+  </button>
+
+  <div class="header-title">
+    <span class="page-section">Dashboards</span>
+    <mat-icon class="breadcrumb-sep">chevron_right</mat-icon>
+    <span class="page-breadcrumb">{{ pageTitle }}</span>
+  </div>
+
+  <div class="header-actions">
+    <button mat-icon-button class="notif-btn" aria-label="Notifications">
+      <div class="notif-wrap">
+        <mat-icon>notifications_outlined</mat-icon>
+        <span class="notif-dot"></span>
+      </div>
+    </button>
+
+    <button mat-button class="user-btn" [matMenuTriggerFor]="userMenu">
+      <div class="user-avatar">
+        {{ initials }}
+      </div>
+      <span class="user-name">{{ authService.getCurrentUser()?.full_name }}</span>
+      <mat-icon class="chevron">keyboard_arrow_down</mat-icon>
+    </button>
+  </div>
+
+  <mat-menu #userMenu="matMenu" class="user-menu-panel">
+    <div class="menu-user-info" mat-menu-item disabled>
+      <span class="menu-user-name">{{ authService.getCurrentUser()?.full_name }}</span>
+      <span class="menu-user-email">{{ authService.getCurrentUser()?.email }}</span>
+    </div>
+    <mat-divider></mat-divider>
+    <button mat-menu-item (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      <span>Sign Out</span>
+    </button>
+  </mat-menu>
+</header>

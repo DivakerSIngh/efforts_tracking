@@ -1,0 +1,95 @@
+<div class="login-page">
+
+  <!-- Left branding panel -->
+  <div class="brand-panel">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="panel-inner">
+      <div class="brand-logo">
+        <div class="brand-icon"><mat-icon>track_changes</mat-icon></div>
+        <span class="brand-name">EffortTracker</span>
+      </div>
+      <div class="panel-headline">
+        <h2>Track effort.<br>Deliver results.</h2>
+        <p>Intelligent time tracking and beautiful analytics � built for modern teams.</p>
+      </div>
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feat-icon"><mat-icon>schedule</mat-icon></div>
+          <span>Real-time effort tracking</span>
+        </div>
+        <div class="feature-item">
+          <div class="feat-icon"><mat-icon>bar_chart</mat-icon></div>
+          <span>Advanced reports &amp; insights</span>
+        </div>
+        <div class="feature-item">
+          <div class="feat-icon"><mat-icon>people</mat-icon></div>
+          <span>Team management &amp; roles</span>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat"><span class="stat-num">10k+</span><span class="stat-lbl">Hours tracked</span></div>
+        <div class="stat-div"></div>
+        <div class="stat"><span class="stat-num">98%</span><span class="stat-lbl">Accuracy rate</span></div>
+        <div class="stat-div"></div>
+        <div class="stat"><span class="stat-num">50+</span><span class="stat-lbl">Teams served</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right form panel -->
+  <div class="form-panel">
+    <div class="login-card">
+      <div class="card-header">
+        <h1 class="card-title">Welcome back</h1>
+        <p class="card-sub">Sign in to continue to your workspace</p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="login-form">
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email address</mat-label>
+          <mat-icon matPrefix class="field-icon">email</mat-icon>
+          <input matInput type="email" formControlName="email" autocomplete="email" />
+          @if (form.get('email')?.hasError('required') && form.get('email')?.touched) {
+            <mat-error>Email is required</mat-error>
+          }
+          @if (form.get('email')?.hasError('email') && form.get('email')?.touched) {
+            <mat-error>Enter a valid email address</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Password</mat-label>
+          <mat-icon matPrefix class="field-icon">lock</mat-icon>
+          <input matInput [type]="showPwd ? 'text' : 'password'" formControlName="password" autocomplete="current-password" />
+          <button type="button" mat-icon-button matSuffix (click)="showPwd = !showPwd" tabindex="-1" aria-label="Toggle password visibility">
+            <mat-icon>{{ showPwd ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (form.get('password')?.hasError('required') && form.get('password')?.touched) {
+            <mat-error>Password is required</mat-error>
+          }
+        </mat-form-field>
+
+        <button
+          mat-raised-button
+          color="primary"
+          type="submit"
+          class="submit-btn"
+          [disabled]="form.invalid || loading"
+        >
+          @if (loading) {
+            <mat-spinner diameter="20" class="btn-spinner"></mat-spinner>
+            <span>Signing in...</span>
+          } @else {
+            <ng-container>
+              <mat-icon>login</mat-icon>
+              <span>Sign In</span>
+            </ng-container>
+          }
+        </button>
+      </form>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,141 @@
+﻿<div class="ts-page">
+
+  <!-- ── Header: month nav + monthly total ─────── -->
+  <div class="ts-header">
+    <div class="ts-header-left">
+      <h1 class="ts-title">
+        <span class="material-icons ts-title-icon">calendar_month</span>
+        Timesheet
+      </h1>
+      <div class="month-nav">
+        <button class="nav-btn" (click)="prevMonth()" matTooltip="Previous month">
+          <span class="material-icons">chevron_left</span>
+        </button>
+        <span class="month-label">{{ monthLabel }}</span>
+        <button class="nav-btn" (click)="nextMonth()" [disabled]="isCurrentMonth" matTooltip="Next month">
+          <span class="material-icons">chevron_right</span>
+        </button>
+      </div>
+    </div>
+    <div class="ts-header-right">
+      <div class="monthly-total-badge">
+        <span class="material-icons">schedule</span>
+        {{ monthlyTotal | number:'1.1-1' }} hrs this month
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Loading bar ───────────────────────────── -->
+  @if (loading) {
+    <div class="loading-bar">
+      <div class="loading-bar-fill"></div>
+    </div>
+  }
+
+  <!-- ── No projects state ─────────────────────── -->
+  @if (!loading && projects.length === 0) {
+    <div class="empty-state">
+      <span class="material-icons empty-icon">assignment_late</span>
+      <p>No projects assigned yet. Contact your administrator.</p>
+    </div>
+  }
+
+  <!-- ── Timesheet grid ────────────────────────── -->
+  @if (!loading && projects.length > 0) {
+    <div class="ts-grid-wrapper">
+      <table class="ts-table">
+
+        <thead>
+          <tr>
+            <th class="col-day sticky-col">Day</th>
+            @for (p of projects; track p.project_id) {
+              <th class="col-project">{{ p.name }}</th>
+            }
+            <th class="col-remarks">Remarks</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (row of dayRows; track row.date) {
+            <tr [class.weekend]="row.isWeekend" [class.today]="row.isToday">
+
+              <!-- Day label -->
+              <td class="col-day sticky-col">
+                <div class="day-cell">
+                  <span class="day-num" [class.today-badge]="row.isToday">{{ row.dayNum }}</span>
+                  <span class="day-name">{{ row.dayName }}</span>
+                </div>
+              </td>
+
+              <!-- Project hour cells -->
+              @for (p of projects; track p.project_id) {
+                <td class="col-hours" [class.has-value]="row.cells[cellKey(p.project_id)].hours">
+                  <div class="cell-wrap" [class.saving]="row.cells[cellKey(p.project_id)].isSaving">
+                    <input
+                      type="number"
+                      class="hours-input"
+                      [(ngModel)]="row.cells[cellKey(p.project_id)].hours"
+                      (ngModelChange)="markDirty(row, p.project_id)"
+                      (blur)="saveCell(row, p.project_id)"
+                      (keydown.enter)="saveCell(row, p.project_id)"
+                      min="0"
+                      max="24"
+                      step="0.5"
+                      placeholder="–"
+                      [disabled]="row.cells[cellKey(p.project_id)].isSaving"
+                      [matTooltip]="p.name" />
+                    @if (row.cells[cellKey(p.project_id)].isSaving) {
+                      <span class="saving-spinner">
+                        <span class="material-icons spin">sync</span>
+                      </span>
+                    }
+                  </div>
+                </td>
+              }
+
+              <!-- Remarks cell (always visible) -->
+              <td class="col-remarks">
+                <div class="remarks-wrap" [class.saving]="row.remarksSaving">
+                  <input
+                    type="text"
+                    class="remarks-input"
+                    [(ngModel)]="row.remarks"
+                    (ngModelChange)="markRemarksDirty(row)"
+                    (blur)="saveRemarks(row)"
+                    (keydown.enter)="saveRemarks(row)"
+                    placeholder="Add a note…"
+                    [disabled]="row.remarksSaving"
+                    maxlength="300" />
+                  @if (row.remarksSaving) {
+                    <span class="saving-spinner">
+                      <span class="material-icons spin">sync</span>
+                    </span>
+                  }
+                </div>
+              </td>
+
+            </tr>
+          }
+        </tbody>
+
+        <tfoot>
+          <tr class="totals-row">
+            <td class="sticky-col footer-label">Total</td>
+            @for (p of projects; track p.project_id) {
+              <td class="footer-proj-total">
+                @if (getProjectTotal(p.project_id) > 0) {
+                  {{ getProjectTotal(p.project_id) | number:'1.1-1' }}
+                } @else {
+                  <span class="zero-total">–</span>
+                }
+              </td>
+            }
+            <td class="footer-grand-total">{{ monthlyTotal | number:'1.1-1' }} hrs</td>
+          </tr>
+        </tfoot>
+
+      </table>
+    </div>
+  }
+
+</div>

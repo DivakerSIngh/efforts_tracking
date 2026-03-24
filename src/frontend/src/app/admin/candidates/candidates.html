@@ -1,0 +1,210 @@
+﻿<div class="admin-page">
+
+  <!-- Page header -->
+  <div class="page-hero">
+    <div class="page-hero-text">
+      <h2>Candidates</h2>
+      <p>Manage candidate accounts, rates, and access status.</p>
+    </div>
+    <button mat-flat-button class="btn-primary-action" (click)="showForm = !showForm">
+      <mat-icon>{{ showForm ? "close" : "person_add" }}</mat-icon>
+      <span>{{ showForm ? "Cancel" : "Add Candidate" }}</span>
+    </button>
+  </div>
+
+  <!-- Progress bar -->
+  <mat-progress-bar *ngIf="loading" mode="indeterminate" class="page-loader"></mat-progress-bar>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <div class="filter-search-wrap">
+      <div class="filter-label">What are you looking for?</div>
+      <div class="filter-search-input">
+        <mat-icon>search</mat-icon>
+        <input type="text" placeholder="Search by name, email, phone…"
+               [(ngModel)]="searchQuery" (input)="applyFilter()">
+      </div>
+    </div>
+    <div class="filter-select-wrap">
+      <div class="filter-label">Status</div>
+      <select class="filter-select" [(ngModel)]="statusFilter" (change)="applyFilter()">
+        <option value="">All</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+    </div>
+    <div class="filter-actions">
+      <button class="btn-filter-search" (click)="applyFilter()">
+        <mat-icon>search</mat-icon>
+        SEARCH
+      </button>
+      <button class="btn-filter-reset" (click)="resetFilter()" title="Reset filters">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Create form -->
+  <div class="form-card" *ngIf="showForm">
+    <div class="form-card-title">
+      <mat-icon>person_add</mat-icon>
+      <span>New Candidate</span>
+    </div>
+    <form [formGroup]="form" (ngSubmit)="submit()" class="create-form">
+
+      <mat-form-field appearance="outline" class="field-wide">
+        <mat-label>Full Name</mat-label>
+        <mat-icon matPrefix>badge</mat-icon>
+        <input matInput formControlName="full_name" placeholder="e.g. Jane Smith">
+        <mat-error *ngIf="form.get('full_name')?.errors?.['required']">Full name is required</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="field-wide">
+        <mat-label>Email</mat-label>
+        <mat-icon matPrefix>email</mat-icon>
+        <input matInput type="email" formControlName="email" placeholder="jane@example.com">
+        <mat-error *ngIf="form.get('email')?.errors?.['required']">Email is required</mat-error>
+        <mat-error *ngIf="form.get('email')?.errors?.['email']">Enter a valid email</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="field-wide">
+        <mat-label>Password</mat-label>
+        <mat-icon matPrefix>lock</mat-icon>
+        <input matInput type="password" formControlName="password" placeholder="Min 8 characters">
+        <mat-error *ngIf="form.get('password')?.errors?.['minlength']">At least 8 characters required</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="field-wide">
+        <mat-label>Phone</mat-label>
+        <mat-icon matPrefix>phone</mat-icon>
+        <input matInput formControlName="phone" placeholder="+1-555-0100">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="field-rate">
+        <mat-label>Hourly Rate (₹)</mat-label>
+        <mat-icon matPrefix>schedule</mat-icon>
+        <input matInput type="number" formControlName="hourly_rate" min="0" step="0.5">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="field-rate">
+        <mat-label>Fixed Amount (₹)</mat-label>
+        <mat-icon matPrefix>payments</mat-icon>
+        <input matInput type="number" formControlName="fixed_amount" min="0" step="0.01">
+      </mat-form-field>
+
+      <div class="form-actions">
+        <button mat-flat-button class="btn-primary-action" type="submit" [disabled]="saving">
+          <mat-icon>{{ saving ? "hourglass_empty" : "person_add" }}</mat-icon>
+          <span>{{ saving ? "Creating..." : "Create & Send Credentials" }}</span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Candidates data card -->
+  <div class="data-card">
+    <div class="data-card-header">
+      <div class="data-card-title">
+        <mat-icon>group</mat-icon>
+        <span>Candidate Roster</span>
+        <span class="count-badge">{{ dataSource.filteredData.length }}</span>
+      </div>
+      <div class="data-card-actions">
+        <button class="btn-primary-action" mat-flat-button (click)="showForm = !showForm" style="height:34px;padding:0 14px;font-size:0.78rem">
+          <mat-icon style="font-size:1rem;width:1rem;height:1rem">{{ showForm ? 'close' : 'person_add' }}</mat-icon>
+          <span>{{ showForm ? 'Cancel' : 'ADD CANDIDATE' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="!loading && dataSource.data.length === 0" class="empty-state">
+      <mat-icon>group_off</mat-icon>
+      <p>No candidates yet. Add your first candidate above.</p>
+    </div>
+
+    <table mat-table [dataSource]="dataSource" matSort class="admin-table" *ngIf="dataSource.data.length > 0">
+
+      <!-- Name column -->
+      <ng-container matColumnDef="full_name">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+        <td mat-cell *matCellDef="let c">
+          <div class="candidate-name-cell">
+            <div class="candidate-avatar">{{ c.full_name?.charAt(0) | uppercase }}</div>
+            <span>{{ c.full_name }}</span>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Email column -->
+      <ng-container matColumnDef="email">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Email</th>
+        <td mat-cell *matCellDef="let c">{{ c.email }}</td>
+      </ng-container>
+
+      <!-- Phone column -->
+      <ng-container matColumnDef="phone">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Phone</th>
+        <td mat-cell *matCellDef="let c">
+          <span *ngIf="c.phone">{{ c.phone }}</span>
+          <span *ngIf="!c.phone" class="text-muted">&#8212;</span>
+        </td>
+      </ng-container>
+
+      <!-- Hourly rate column -->
+      <ng-container matColumnDef="hourly_rate">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Rate / hr</th>
+        <td mat-cell *matCellDef="let c">{{ c.hourly_rate | number:'1.2-2' }}</td>
+      </ng-container>
+
+      <!-- Fixed amount column -->
+      <ng-container matColumnDef="fixed_amount">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Fixed</th>
+        <td mat-cell *matCellDef="let c">{{ c.fixed_amount | number:'1.2-2' }}</td>
+      </ng-container>
+
+      <!-- Status column -->
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+        <td mat-cell *matCellDef="let c">
+          <span class="status-badge" [class.active]="c.is_active" [class.inactive]="!c.is_active">
+            <span class="status-dot"></span>
+            {{ c.is_active ? 'Active' : 'Inactive' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Actions column -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let c">
+          <div class="action-group">
+            <button class="action-pill pill-assign" (click)="openAssignDialog(c)" matTooltip="Assign Project">
+              <mat-icon>link</mat-icon>
+              <span>Assign</span>
+            </button>
+            <button class="action-pill pill-edit" (click)="openEditDialog(c)" matTooltip="Edit Candidate">
+              <mat-icon>edit</mat-icon>
+              <span>Edit</span>
+            </button>
+            <button class="action-pill pill-timesheet" (click)="viewTimesheet(c)" matTooltip="View Timesheet">
+              <mat-icon>calendar_month</mat-icon>
+              <span>Timesheet</span>
+            </button>
+            <button class="action-pill" [class.pill-deactivate]="c.is_active" [class.pill-activate]="!c.is_active"
+                    [matTooltip]="c.is_active ? 'Deactivate' : 'Activate'"
+                    (click)="toggleStatus(c)">
+              <mat-icon>{{ c.is_active ? 'person_off' : 'person' }}</mat-icon>
+              <span>{{ c.is_active ? 'Deactivate' : 'Activate' }}</span>
+            </button>
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons></mat-paginator>
+  </div>
+
+</div>

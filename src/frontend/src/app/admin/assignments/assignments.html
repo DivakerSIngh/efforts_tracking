@@ -1,0 +1,58 @@
+<div class="admin-page">
+
+  <!-- Page header -->
+  <div class="page-hero">
+    <div class="page-hero-text">
+      <h2>Assignments</h2>
+      <p>Link candidates to projects and manage active work assignments.</p>
+    </div>
+  </div>
+
+  <!-- Progress bar -->
+  <mat-progress-bar *ngIf="loading" mode="indeterminate" class="page-loader"></mat-progress-bar>
+
+  <!-- Assign form -->
+  <div class="form-card">
+    <div class="form-card-title">
+      <mat-icon>assignment_ind</mat-icon>
+      <span>Assign Candidate to Project</span>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="create-form">
+
+      <mat-form-field appearance="outline" class="field-wide">
+        <mat-label>Candidate</mat-label>
+        <mat-icon matPrefix style="color:#06b6d4">group</mat-icon>
+        <mat-select formControlName="candidateId">
+          <mat-option *ngFor="let c of candidates" [value]="c.user_id">
+            {{ c.full_name }} &mdash; {{ c.email }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="form.get('candidateId')?.errors?.['required']">Select a candidate</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="field-wide">
+        <mat-label>Project</mat-label>
+        <mat-icon matPrefix style="color:#8b5cf6">folder_special</mat-icon>
+        <mat-select formControlName="projectId">
+          <mat-option *ngFor="let p of projects" [value]="p.project_id">{{ p.name }}</mat-option>
+        </mat-select>
+        <mat-error *ngIf="form.get('projectId')?.errors?.['required']">Select a project</mat-error>
+      </mat-form-field>
+
+      <div class="form-actions">
+        <button mat-flat-button class="btn-primary-action" type="submit" [disabled]="saving || loading">
+          <mat-icon>{{ saving ? "hourglass_empty" : "link" }}</mat-icon>
+          <span>{{ saving ? "Assigning..." : "Assign Now" }}</span>
+        </button>
+      </div>
+    </form>
+
+    <!-- Info hint -->
+    <div class="assign-hint">
+      <mat-icon>info_outline</mat-icon>
+      <span>If a candidate is already assigned to this project, the assignment will be reactivated.</span>
+    </div>
+  </div>
+
+</div>

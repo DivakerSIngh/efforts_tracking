@@ -1,0 +1,157 @@
+<div class="report-page">
+
+  <!-- Page header -->
+  <div class="page-hero">
+    <div class="page-hero-text">
+      <h2>Reports</h2>
+      <p>Monthly effort summary across all candidates and projects.</p>
+    </div>
+    <button mat-flat-button class="btn-primary-action" (click)="exportExcel()" [disabled]="exporting || loading" *ngIf="isAdmin">
+      <mat-icon>download</mat-icon>
+      <span>{{ exporting ? 'EXPORTING…' : 'EXPORT EXCEL' }}</span>
+    </button>
+  </div>
+
+  <!-- Progress bar -->
+  <mat-progress-bar *ngIf="loading || exporting" mode="indeterminate" class="page-loader"></mat-progress-bar>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <div class="filter-search-wrap" *ngIf="isAdmin">
+      <div class="filter-label">What are you looking for?</div>
+      <div class="filter-search-input">
+        <mat-icon>search</mat-icon>
+        <input type="text" placeholder="Search candidate name or email…"
+               [(ngModel)]="searchQuery" (input)="applyFilter()">
+      </div>
+    </div>
+    <div class="filter-select-wrap">
+      <div class="filter-label">Month</div>
+      <select class="filter-select" [(ngModel)]="selectedMonth" (change)="load()">
+        <option *ngFor="let m of months" [ngValue]="m.value">{{ m.label }}</option>
+      </select>
+    </div>
+    <div class="filter-select-wrap filter-year">
+      <div class="filter-label">Year</div>
+      <select class="filter-select" [(ngModel)]="selectedYear" (change)="load()">
+        <option *ngFor="let y of years" [ngValue]="y">{{ y }}</option>
+      </select>
+    </div>
+    <div class="filter-actions">
+      <button class="btn-filter-search" (click)="load()">
+        <mat-icon>search</mat-icon>
+        SEARCH
+      </button>
+      <button class="btn-filter-reset" (click)="resetFilter()" title="Reset search">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Data card -->
+  <div class="data-card">
+    <div class="data-card-header">
+      <div class="data-card-title">
+        <mat-icon>bar_chart</mat-icon>
+        <span>{{ getMonthLabel(selectedMonth) }} {{ selectedYear }}</span>
+        <span class="count-badge">{{ dataSource.filteredData.length }}</span>
+      </div>
+      <div class="data-card-totals">
+        <span class="total-pill hours">
+          <mat-icon>schedule</mat-icon>
+          {{ grandTotalHours | number:'1.1-1' }} hrs
+        </span>
+        <span class="total-pill amount">
+          <mat-icon>payments</mat-icon>
+          ₹{{ grandTotalAmount | number:'1.2-2' }}
+        </span>
+      </div>
+    </div>
+
+    <div *ngIf="!loading && dataSource.data.length === 0" class="empty-state">
+      <mat-icon>inbox</mat-icon>
+      <p>No data for {{ getMonthLabel(selectedMonth) }} {{ selectedYear }}</p>
+    </div>
+
+    <div class="table-wrapper" *ngIf="dataSource.data.length > 0">
+      <table mat-table [dataSource]="dataSource" matSort class="admin-table">
+
+        <!-- Candidate Name -->
+        <ng-container matColumnDef="candidateName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Candidate Name</th>
+          <td mat-cell *matCellDef="let g">
+            <div class="name-cell">
+              <div class="candidate-avatar">{{ g.candidateName?.charAt(0) | uppercase }}</div>
+              <div class="name-info">
+                <span class="candidate-name">Name : {{ g.candidateName }}</span>
+              </div>
+            </div>
+          </td>
+          <td mat-footer-cell *matFooterCellDef><strong>Grand Total</strong></td>
+        </ng-container>
+
+        <!-- Assigned Projects -->
+        <ng-container matColumnDef="assignedProjects">
+          <th mat-header-cell *matHeaderCellDef>Assigned Projects</th>
+          <td mat-cell *matCellDef="let g">
+            <div class="projects-list">
+              <span class="project-item" *ngFor="let p of g.projects ; let i = index;">
+             <b> {{i + 1}}. {{ p.name }} </b> : {{ p.hours | number:'1.1-1' }} Hrs
+              </span>
+            </div>
+          </td>
+          <td mat-footer-cell *matFooterCellDef></td>
+        </ng-container>
+
+        <!-- Email -->
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Email</th>
+          <td mat-cell *matCellDef="let g" class="email-cell">{{ g.email }}</td>
+          <td mat-footer-cell *matFooterCellDef></td>
+        </ng-container>
+
+        <!-- Hourly Rate -->
+        <ng-container matColumnDef="hourlyRate">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="num-col">Rate/hr</th>
+          <td mat-cell *matCellDef="let g" class="num-col">
+            <span *ngIf="g.hourlyRate > 0">₹{{ g.hourlyRate | number:'1.2-2' }}</span>
+            <span *ngIf="g.hourlyRate === 0" class="nil">—</span>
+          </td>
+          <td mat-footer-cell *matFooterCellDef></td>
+        </ng-container>
+
+        <!-- Fixed Amount -->
+        <ng-container matColumnDef="fixedAmount">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="num-col">Fixed</th>
+          <td mat-cell *matCellDef="let g" class="num-col">
+            <span *ngIf="g.fixedAmount > 0">₹{{ g.fixedAmount | number:'1.2-2' }}</span>
+            <span *ngIf="g.fixedAmount === 0" class="nil">—</span>
+          </td>
+          <td mat-footer-cell *matFooterCellDef></td>
+        </ng-container>
+
+        <!-- Total Hours -->
+        <ng-container matColumnDef="totalHours">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="num-col">Hours</th>
+          <td mat-cell *matCellDef="let g" class="num-col hours-col">{{ g.totalHours | number:'1.1-1' }}</td>
+          <td mat-footer-cell *matFooterCellDef class="num-col footer-total">{{ grandTotalHours | number:'1.1-1' }}</td>
+        </ng-container>
+
+        <!-- Total Amount -->
+        <ng-container matColumnDef="totalAmount">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="num-col">Amount</th>
+          <td mat-cell *matCellDef="let g" class="num-col amount-col">₹{{ g.totalAmount | number:'1.2-2' }}</td>
+          <td mat-footer-cell *matFooterCellDef class="num-col footer-total amount-col">₹{{ grandTotalAmount | number:'1.2-2' }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        <tr mat-footer-row *matFooterRowDef="displayedColumns" class="footer-row"
+            [class.footer-hidden]="dataSource.filteredData.length === 0"></tr>
+      </table>
+    </div>
+
+    <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons></mat-paginator>
+  </div>
+
+</div>

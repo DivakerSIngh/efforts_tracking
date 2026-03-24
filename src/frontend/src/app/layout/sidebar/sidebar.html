@@ -1,0 +1,74 @@
+<div class="sidebar-wrapper" [class.collapsed]="collapsed">
+
+  <!-- Brand -->
+  <div class="sidebar-brand">
+    <div class="brand-icon">
+      <mat-icon>track_changes</mat-icon>
+    </div>
+    <div class="brand-text">
+      <span class="brand-name">EffortTrack</span>
+      <span class="brand-tagline">Workforce Intelligence</span>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="sidebar-nav">
+    @for (item of visibleItems; track item.route) {
+
+      @if (!item.children) {
+        <!-- Regular nav item -->
+        <a class="nav-item"
+           [routerLink]="item.route"
+           routerLinkActive="active"
+           [matTooltip]="collapsed ? item.label : ''"
+           matTooltipPosition="right">
+          <span class="nav-icon"
+                [style.background]="item.iconBg"
+                [style.color]="item.color">
+            <mat-icon [style.color]="item.color">{{ item.icon }}</mat-icon>
+          </span>
+          <span class="nav-label">{{ item.label }}</span>
+          <span class="nav-indicator" [style.background]="item.color"></span>
+        </a>
+      } @else {
+        <!-- Admin group -->
+        <div class="nav-group">
+          <div class="nav-section-label">
+            <mat-icon [style.color]="item.color">{{ item.icon }}</mat-icon>
+            <span>{{ item.label }}</span>
+          </div>
+          <div class="nav-children">
+            @for (child of item.children; track child.route) {
+              <a class="nav-item child"
+                 [routerLink]="child.route"
+                 routerLinkActive="active"
+                 [matTooltip]="collapsed ? child.label : ''"
+                 matTooltipPosition="right">
+                <span class="nav-icon"
+                      [style.background]="child.iconBg"
+                      [style.color]="child.color">
+                  <mat-icon [style.color]="child.color">{{ child.icon }}</mat-icon>
+                </span>
+                <span class="nav-label">{{ child.label }}</span>
+                <span class="nav-indicator" [style.background]="child.color"></span>
+              </a>
+            }
+          </div>
+        </div>
+      }
+
+    }
+  </nav>
+
+  <!-- Footer / toggle -->
+  <div class="sidebar-footer">
+    <div class="version-tag">v1.0.0</div>
+    <button class="sidebar-collapse-btn"
+            (click)="toggleCollapse.emit()"
+            [matTooltip]="collapsed ? 'Expand menu' : 'Collapse menu'"
+            matTooltipPosition="right">
+      <mat-icon>{{ collapsed ? 'chevron_right' : 'chevron_left' }}</mat-icon>
+    </button>
+  </div>
+
+</div>
