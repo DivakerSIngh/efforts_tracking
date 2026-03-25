@@ -37,6 +37,10 @@ export class Sidebar {
       role: 'candidate', color: '#10b981', iconBg: '#ecfdf5'
     },
     {
+      label: 'My Profile', icon: 'person', route: '/profile',
+      role: 'candidate', color: '#f472b6', iconBg: '#fdf2f8'
+    },
+    {
       label: 'Reports', icon: 'bar_chart', route: '/report',
       color: '#f59e0b', iconBg: '#fffbeb'
     },

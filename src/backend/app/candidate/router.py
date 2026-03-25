@@ -1,9 +1,22 @@
+
 from fastapi import APIRouter, Depends
 from app.candidate.schemas import CandidateCreate, CandidateUpdate, CandidateResponse
 from app.candidate import service
-from app.dependencies import require_admin
+from app.dependencies import require_admin, get_current_user
+
 
 router = APIRouter()
+
+# Candidate self-profile endpoints
+@router.get("/me", response_model=CandidateResponse)
+def get_my_profile(current_user: dict = Depends(get_current_user)):
+    """Candidate: get own profile."""
+    return service.get_candidate_profile(current_user["user_id"])
+
+@router.put("/me", response_model=CandidateResponse)
+def update_my_profile(data: CandidateUpdate, current_user: dict = Depends(get_current_user)):
+    """Candidate: update own profile."""
+    return service.update_candidate(current_user["user_id"], data)
 
 
 @router.get("", response_model=list[CandidateResponse])

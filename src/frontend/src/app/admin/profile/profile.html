@@ -1,0 +1,42 @@
+<div class="profile-container">
+  <h2>My Profile</h2>
+  <form *ngIf="candidate" (ngSubmit)="onSubmit()" #profileForm="ngForm">
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" class="form-control" [value]="candidate.email" disabled />
+    </div>
+    <div class="form-group">
+      <label>Full Name</label>
+      <input type="text" class="form-control" [(ngModel)]="candidate.full_name" name="full_name" required />
+    </div>
+    <div class="form-group">
+      <label>Phone</label>
+      <input type="text" class="form-control" [(ngModel)]="candidate.phone" name="phone" />
+    </div>
+    <div class="form-group">
+      <label>Hourly Rate</label>
+      <input type="number" class="form-control" [(ngModel)]="candidate.hourly_rate" name="hourly_rate" />
+    </div>
+    <div class="form-group">
+      <label>Fixed Amount</label>
+      <input type="number" class="form-control" [(ngModel)]="candidate.fixed_amount" name="fixed_amount" />
+    </div>
+    <div class="form-group">
+      <label>Account No</label>
+      <input type="text" class="form-control" [(ngModel)]="candidate.account_no" name="account_no" />
+    </div>
+    <div class="form-group">
+      <label>IFSC Code</label>
+      <input type="text" class="form-control" [(ngModel)]="candidate.ifsc_code" name="ifsc_code" />
+    </div>
+    <!-- <button type="submit" class="btn btn-primary" [disabled]="profileForm.invalid">Update Profile</button> -->
+     
+
+    <button  type="submit" class="btn-primary-action" mat-flat-button  style="height:34px;padding:0 14px;font-size:0.78rem">
+          <mat-icon style="font-size:1rem;width:1rem;height:1rem">save</mat-icon>
+          <span>Save Changes</span>
+        </button>
+  </form>
+  <div *ngIf="success" class="alert alert-success mt-2">Profile updated successfully!</div>
+  <div *ngIf="error" class="alert alert-danger mt-2">Failed to update profile.</div>
+</div>

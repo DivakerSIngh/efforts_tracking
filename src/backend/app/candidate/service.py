@@ -19,8 +19,17 @@ def get_all_candidates() -> list[dict]:
     return repository.get_all_candidates()
 
 
+
 def update_candidate(user_id: int, data: CandidateUpdate) -> dict:
     return repository.update_candidate(user_id, data.model_dump(exclude_none=False))
+
+def get_candidate_profile(user_id: int) -> dict:
+    # Reuse get_all_candidates and filter, or add a direct DB call if needed
+    all_candidates = repository.get_all_candidates()
+    for c in all_candidates:
+        if c.get("user_id") == user_id:
+            return c
+    return {}
 
 
 def set_candidate_status(user_id: int, is_active: bool) -> None:

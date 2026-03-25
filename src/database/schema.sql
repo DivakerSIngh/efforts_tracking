@@ -101,6 +101,7 @@ IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'Projects' AND schema_id = 
 CREATE TABLE dbo.Projects (
     ProjectId    INT IDENTITY(1,1) PRIMARY KEY,
     Name         NVARCHAR(200)  NOT NULL,
+    ClientName   NVARCHAR(200)  NULL,
     Description  NVARCHAR(1000) NULL,
     IsActive     BIT            NOT NULL CONSTRAINT DF_Proj_IsActive DEFAULT 1,
     CreatedDate  DATETIME2      NOT NULL CONSTRAINT DF_Proj_Created  DEFAULT SYSUTCDATETIME(),
@@ -260,16 +261,17 @@ GO
 -- ----------------------------------------------------------------
 CREATE PROCEDURE dbo.CreateProject
     @Name        NVARCHAR(200),
+    @ClientName  NVARCHAR(200) = NULL,
     @Description NVARCHAR(1000) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
-    INSERT INTO dbo.Projects (Name, Description)
-    VALUES (@Name, @Description);
+    INSERT INTO dbo.Projects (Name, ClientName, Description)
+    VALUES (@Name, @ClientName, @Description);
 
     DECLARE @NewId INT = SCOPE_IDENTITY();
 
-    SELECT ProjectId, Name, Description, IsActive, CreatedDate
+    SELECT ProjectId, Name, ClientName, Description, IsActive, CreatedDate
     FROM dbo.Projects
     WHERE ProjectId = @NewId;
 END
@@ -623,27 +625,29 @@ GO
 -- ----------------------------------------------------------------
 -- 15. GetAllProjects
 -- ----------------------------------------------------------------
-CREATE PROCEDURE dbo.GetAllProjects
+CREATE PROCEDURE dbo.UpdateProject
+    @ProjectId   INT,
+    @Name        NVARCHAR(200)  = NULL,
+    @ClientName  NVARCHAR(200)  = NULL,
+    @Description NVARCHAR(1000) = NULL,
+    @IsActive    BIT            = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT
-        ProjectId       AS project_id,
-        Name            AS name,
-        Description     AS description,
-        IsActive        AS is_active,
-        CreatedDate     AS created_date
+    UPDATE dbo.Projects
+    SET
+        Name        = ISNULL(@Name,        Name),
+        ClientName  = ISNULL(@ClientName,  ClientName),
+        Description = ISNULL(@Description, Description),
+        IsActive    = ISNULL(@IsActive,    IsActive),
+        UpdatedDate = SYSUTCDATETIME()
+    WHERE ProjectId = @ProjectId;
+
+    SELECT ProjectId, Name, ClientName, Description, IsActive, CreatedDate, UpdatedDate
     FROM dbo.Projects
-    ORDER BY Name;
+    WHERE ProjectId = @ProjectId;
 END
 GO
-
--- ----------------------------------------------------------------
--- 16. GetAssignedProjects  (for a candidate's timesheet)
--- ----------------------------------------------------------------
-CREATE PROCEDURE dbo.GetAssignedProjects
-    @CandidateId INT
-AS
 BEGIN
     SET NOCOUNT ON;
     SELECT

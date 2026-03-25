@@ -27,6 +27,12 @@ export const routes: Routes = [
         loadChildren: () => import('./report/report-module').then(m => m.ReportModule),
       },
       {
+        path: 'profile',
+        canActivate: [roleGuard],
+        data: { role: 'candidate' },
+        loadComponent: () => import('./admin/profile/profile').then(m => m.ProfileComponent),
+      },
+      {
         path: 'admin',
         canActivate: [roleGuard],
         data: { role: 'admin' },

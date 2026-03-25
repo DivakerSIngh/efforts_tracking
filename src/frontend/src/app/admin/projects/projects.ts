@@ -100,6 +100,7 @@ export class Projects implements OnInit {
       if (result) {
         this.projects = [...this.projects, result];
         this.snack.open('Project created', undefined, { duration: 2500 });
+         this.loadProjects();
       }
     });
   }
@@ -117,6 +118,7 @@ export class Projects implements OnInit {
           p.project_id === project.project_id ? { ...p, ...result } : p
         );
         this.snack.open('Project updated', undefined, { duration: 2500 });
+         this.loadProjects();
       }
     });
   }
