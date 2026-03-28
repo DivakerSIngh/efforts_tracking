@@ -250,9 +250,27 @@
 .chart-canvas-wrap {
   position: relative;
   height: 220px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  canvas {
+    max-width: 100%;
+    height: auto !important;
+    width: auto !important;
+  }
 }
 
-.doughnut-wrap { height: 260px; }
+.doughnut-wrap {
+  height: 260px;
+
+  canvas {
+    max-width: 100%;
+    height: auto !important;
+    width: auto !important;
+  }
+}
 
 /* -- Empty / no-data --------------------------------- */
 .no-data {

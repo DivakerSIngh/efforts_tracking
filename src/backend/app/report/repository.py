@@ -34,4 +34,15 @@ def get_all_candidates_report(month: int, year: int, candidate_id: int | None = 
 
 
 def get_admin_project_report(month: int, year: int) -> list[dict]:
-    return execute_sp("GetAdminProjectReport", {"Month": month, "Year": year})
+    rows = execute_sp("GetAdminProjectReport", {"Month": month, "Year": year})
+    return [
+        {
+            "project_id": r["ProjectId"],
+            "project_name": r["ProjectName"],
+            "total_candidates": int(r["TotalCandidates"]),
+            "total_hours": float(r["TotalHours"]),
+            "candidate_amount": float(r["CandidateAmount"]),
+            "project_amount": float(r["ProjectAmount"]),
+        }
+        for r in rows
+    ]

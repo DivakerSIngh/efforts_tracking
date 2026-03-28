@@ -3,8 +3,8 @@
   <!-- Page Header -->
   <div class="page-hero">
     <div class="page-hero-text">
-      <h2>My Dashboard</h2>
-      <p>Your monthly work summary, earnings, and project activity.</p>
+      <h2>{{isAdmin ? 'Admin' : 'My'}} Dashboard</h2>
+      <p>{{isAdmin ? 'Project-wise efforts and billing summary.' : 'Your monthly work summary, earnings, and project activity.'}}</p>
     </div>
   </div>
 
@@ -35,7 +35,58 @@
 
   <mat-progress-bar *ngIf="loading" mode="indeterminate" class="page-loader"></mat-progress-bar>
 
-  <ng-container *ngIf="summary">
+  <!-- ADMIN VIEW -->
+  <ng-container *ngIf="isAdmin && projectData.length">
+
+    <!-- Admin Summary Cards -->
+    <div class="summary-cards">
+      <mat-card class="stat-card hours-card">
+        <mat-card-content>
+          <div class="card-inner">
+            <div class="card-icon-wrap"><mat-icon>schedule</mat-icon></div>
+            <div class="card-body">
+              <div class="stat-value">{{ totalHours | number:'1.1-1' }}</div>
+              <div class="stat-label">Total Hours</div>
+              <div class="stat-sub">{{ getMonthName(selectedMonth) }} {{ selectedYear }}</div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card earnings-card">
+        <mat-card-content>
+          <div class="card-inner">
+            <div class="card-icon-wrap"><mat-icon>account_balance_wallet</mat-icon></div>
+            <div class="card-body">
+              <div class="stat-value">₹{{ totalAmount | number:'1.2-2' }}</div>
+              <div class="stat-label">Total Amount</div>
+              <div class="stat-sub">All Candidates</div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Admin Project Chart -->
+    <mat-card class="chart-card">
+      <mat-card-content>
+        <div class="chart-header">
+          <div class="section-title">
+            <mat-icon>bar_chart</mat-icon>
+            <span>Project-wise Efforts & Billing</span>
+          </div>
+          <span class="chart-sub">{{ getMonthName(selectedMonth) }} {{ selectedYear }}</span>
+        </div>
+        <div class="chart-canvas-wrap">
+          <canvas #projectChartRef width="600" height="300"></canvas>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+  </ng-container>
+
+  <!-- CANDIDATE VIEW -->
+  <ng-container *ngIf="!isAdmin && summary">
 
     <!-- Summary Cards -->
     <div class="summary-cards">
@@ -97,12 +148,12 @@
           <div class="chart-header">
             <div class="section-title">
               <mat-icon>bar_chart</mat-icon>
-              <span>Monthly Hours Trend</span>
+              <span>Yearly Hours Trend</span>
             </div>
-            <span class="chart-sub">Last 12 months</span>
+            <span class="chart-sub">{{ selectedYear }}</span>
           </div>
           <div class="chart-canvas-wrap">
-            <canvas #monthlyChartRef></canvas>
+            <canvas #monthlyChartRef width="400" height="220"></canvas>
           </div>
         </mat-card-content>
       </mat-card>
@@ -118,7 +169,7 @@
             <span class="chart-sub">{{ getMonthName(summary.month) }} {{ summary.year }}</span>
           </div>
           <div class="chart-canvas-wrap doughnut-wrap">
-            <canvas #projectChartRef></canvas>
+            <canvas #projectChartRef width="400" height="260"></canvas>
           </div>
         </mat-card-content>
       </mat-card>
@@ -135,5 +186,4 @@
   </ng-container>
 
 </div>
-
 

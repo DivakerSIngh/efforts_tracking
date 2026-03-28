@@ -79,6 +79,33 @@ ng serve                   # http://localhost:4200
 
 ---
 
+## Running Both Applications on Localhost
+
+After completing the setup steps above, run both applications simultaneously in separate terminal windows:
+
+### **Terminal 1 – Backend API**
+```powershell
+cd src/backend
+.\.venv\Scripts\Activate.ps1
+uvicorn main:app --reload --port 8000
+```
+✅ Backend running at: **http://localhost:8000**  
+📚 API Documentation: **http://localhost:8000/api/docs**
+
+### **Terminal 2 – Frontend Application**
+```powershell
+cd src/frontend
+ng serve
+```
+✅ Frontend running at: **http://localhost:4200**
+
+### **Access the Application**
+- **Application**: http://localhost:4200
+- **API Docs**: http://localhost:8000/api/docs
+- Use the [default credentials below](#default-credentials-after-running-seed_adminpy) to log in
+
+---
+
 ## Default Credentials (after running seed_admin.py)
 
 | Role      | Email                      | Password       |

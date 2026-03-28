@@ -41,3 +41,9 @@ def export_report(month: int, year: int, _: dict = Depends(require_admin)):
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
+
+
+@router.get("/admin/projects")
+def admin_projects_report(month: int, year: int, _: dict = Depends(require_admin)):
+    """Admin: get project-wise report with hours and amounts for a given month."""
+    return service.get_admin_project_report(month, year)

@@ -7,6 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AdminService } from '../admin';
 import { Project, TimesheetEntry, Candidate } from '../../core/models';
+import { EncryptionService } from '../../core/encryption.service';
 
 interface CellData {
   hours: number | null;
@@ -181,10 +182,21 @@ export class CandidateTimesheetView implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private admin: AdminService,
+    private encryption: EncryptionService,
   ) {}
 
   ngOnInit(): void {
-    this.candidateId = Number(this.route.snapshot.paramMap.get('id'));
+    const encryptedId = this.route.snapshot.paramMap.get('id');
+    if (encryptedId) {
+      const decrypted = this.encryption.decrypt(encryptedId);
+      if (decrypted !== null) {
+        this.candidateId = decrypted;
+      } else {
+        console.error('Failed to decrypt candidate ID');
+        this.router.navigate(['/admin/candidates']);
+        return;
+      }
+    }
     const state = history.state as any;
     this.candidateName = state?.candidateName ?? '';
     const now = new Date();

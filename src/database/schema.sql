@@ -516,14 +516,21 @@ BEGIN
     SET NOCOUNT ON;
     SELECT
         p.ProjectId,
-        p.Name                              AS ProjectName,
-        COUNT(DISTINCT te.CandidateId)      AS TotalCandidates,
-        ISNULL(SUM(te.Hours), 0)            AS TotalHours
+        p.Name                                                  AS ProjectName,
+        COUNT(DISTINCT te.CandidateId)                          AS TotalCandidates,
+        ISNULL(SUM(te.Hours), 0)                                AS TotalHours,
+        ISNULL(SUM(
+            ISNULL(te.Hours, 0) * ISNULL(c.HourlyRate, 0) + ISNULL(c.FixedAmount, 0)
+        ), 0)                                                   AS CandidateAmount,
+        ISNULL(SUM(
+            ISNULL(te.Hours, 0) * ISNULL(c.HourlyRate, 0) + ISNULL(c.FixedAmount, 0)
+        ), 0)                                                   AS ProjectAmount
     FROM dbo.Projects p
     LEFT JOIN dbo.TimesheetEntries te
         ON  te.ProjectId = p.ProjectId
         AND MONTH(te.EntryDate) = @Month
         AND YEAR(te.EntryDate)  = @Year
+    LEFT JOIN dbo.Candidates c ON c.UserId = te.CandidateId
     WHERE p.IsActive = 1
     GROUP BY p.ProjectId, p.Name
     ORDER BY p.Name;

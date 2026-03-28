@@ -15,4 +15,8 @@ export class DashboardService {
   getTrend(months = 6): Observable<MonthlyTrend[]> {
     return this.http.get<MonthlyTrend[]>(`/api/dashboard/trend?months=${months}`);
   }
+
+  getYearlyTrend(year: number): Observable<MonthlyTrend[]> {
+    return this.http.get<MonthlyTrend[]>(`/api/dashboard/yearly-trend?year=${year}`);
+  }
 }

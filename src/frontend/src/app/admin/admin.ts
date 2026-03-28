@@ -50,4 +50,9 @@ export class AdminService {
   assignProject(candidateId: number, projectId: number): Observable<void> {
     return this.http.post<void>('/api/projects/assign', { candidate_id: candidateId, project_id: projectId });
   }
+
+  // ── Admin Reports ───────────────────────────────────────────────
+  getAdminProjectReport(month: number, year: number): Observable<any[]> {
+    return this.http.get<any[]>(`/api/report/admin/projects?month=${month}&year=${year}`);
+  }
 }

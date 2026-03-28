@@ -26,3 +26,8 @@ def export_all_candidates_report_excel(month: int, year: int) -> BytesIO:
     wb.save(buffer)
     buffer.seek(0)
     return buffer
+
+
+def get_admin_project_report(month: int, year: int) -> list[dict]:
+    """Admin: get project-wise report with hours and amounts."""
+    return repository.get_admin_project_report(month, year)

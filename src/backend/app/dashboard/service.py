@@ -42,3 +42,11 @@ def get_monthly_trend(candidate_id: int, months: int = 6) -> list[dict]:
         {"year": r["Year"], "month": r["Month"], "total_hours": float(r["TotalHours"])}
         for r in rows
     ]
+
+
+def get_yearly_trend(candidate_id: int, year: int) -> list[dict]:
+    rows = repository.get_candidate_yearly_trend(candidate_id, year)
+    return [
+        {"year": r["Year"], "month": r["Month"], "total_hours": float(r["TotalHours"])}
+        for r in rows
+    ]

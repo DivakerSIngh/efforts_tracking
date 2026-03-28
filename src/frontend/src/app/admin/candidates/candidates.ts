@@ -19,6 +19,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { AdminService } from '../admin';
 import { Candidate } from '../../core/models';
+import { EncryptionService } from '../../core/encryption.service';
 import { AssignProjectDialog } from './assign-project-dialog';
 import { EditCandidateDialog } from './edit-candidate-dialog';
 
@@ -59,6 +60,7 @@ export class Candidates implements OnInit, AfterViewInit {
     private snack: MatSnackBar,
     private dialog: MatDialog,
     private router: Router,
+    private encryption: EncryptionService,
   ) {}
 
   ngOnInit(): void {
@@ -140,7 +142,8 @@ export class Candidates implements OnInit, AfterViewInit {
   }
 
   viewTimesheet(c: Candidate): void {
-    this.router.navigate(['/admin/candidates', c.user_id, 'timesheet'], {
+    const encryptedId = this.encryption.encrypt(c.user_id);
+    this.router.navigate(['/admin/candidates', encryptedId, 'timesheet'], {
       state: { candidateName: c.full_name },
     });
   }

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -14,8 +14,18 @@ import {
   BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend,
   DoughnutController, ArcElement,
 } from 'chart.js';
+import { AuthService } from '../../core/auth';
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend, DoughnutController, ArcElement);
+
+interface ProjectReport {
+  project_id: number;
+  project_name: string;
+  total_candidates: number;
+  total_hours: number;
+  candidate_amount: number;
+  project_amount: number;
+}
 
 @Component({
   selector: 'app-dashboard-home',
@@ -41,12 +51,18 @@ export class DashboardHome implements OnInit, AfterViewInit, OnDestroy {
   loading = false;
   summary: DashboardSummary | null = null;
   trend: MonthlyTrend[] = [];
+  projectData: ProjectReport[] = [];
+  
+  auth = inject(AuthService);
 
   months = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: new Date(2000, i).toLocaleString('default', { month: 'long' }) }));
   years  = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
 
   selectedMonth = new Date().getMonth() + 1;
   selectedYear  = new Date().getFullYear();
+
+  totalHours = 0;
+  totalAmount = 0;
 
   private monthlyChart: Chart | null = null;
   private projectChart: Chart | null = null;
@@ -57,6 +73,9 @@ export class DashboardHome implements OnInit, AfterViewInit, OnDestroy {
     '#f59e0b','#ef4444','#ec4899','#14b8a6',
   ];
 
+  get isAdmin(): boolean {  
+    return this.auth.getRole() === 'admin'; }
+  
   get totalPaymentLabel(): string {
     return this.summary ? this.summary.total_payment.toFixed(2) : '0.00';
   }
@@ -64,13 +83,22 @@ export class DashboardHome implements OnInit, AfterViewInit, OnDestroy {
   constructor(private ds: DashboardService) {}
 
   ngOnInit(): void {
+    
     this.load();
+    this.isAdmin
   }
 
   ngAfterViewInit(): void {
     this.chartsReady = true;
-    if (this.trend.length)                        this.renderMonthlyChart();
-    if (this.summary?.project_breakdown?.length)  this.renderProjectChart();
+    // Delay rendering to ensure DOM is fully ready
+    setTimeout(() => {
+      if (this.isAdmin) {
+        if (this.projectData.length) this.renderProjectChart();
+      } else {
+        if (this.trend.length) this.renderMonthlyChart();
+        if (this.summary?.project_breakdown?.length) this.renderProjectChart();
+      }
+    }, 100);
   }
 
   ngOnDestroy(): void {
@@ -81,19 +109,43 @@ export class DashboardHome implements OnInit, AfterViewInit, OnDestroy {
   load(): void {
     this.loading = true;
     this.ds.getSummary(this.selectedMonth, this.selectedYear).subscribe({
-      next: (s) => {
-        this.summary = s;
+      next: (data: any) => {
+        if (this.isAdmin) {
+          // Admin: data is array of projects
+          this.projectData = data as ProjectReport[];
+          this.calculateAdminTotals();
+        } else {
+          // Candidate: data is summary object
+          this.summary = data as DashboardSummary;
+        }
         this.loading = false;
-        if (this.chartsReady) this.renderProjectChart();
+        if (this.chartsReady) {
+          if (this.isAdmin) {
+            setTimeout(() => this.renderProjectChart(), 50);
+          } else {
+            setTimeout(() => this.renderProjectChart(), 50);
+          }
+        }
       },
       error: () => { this.loading = false; },
     });
-    this.ds.getTrend(12).subscribe({
-      next: (t) => {
-        this.trend = t;
-        if (this.chartsReady) this.renderMonthlyChart();
-      },
-    });
+    
+    // Only load trend for candidates
+    if (!this.isAdmin) {
+      this.ds.getYearlyTrend(this.selectedYear).subscribe({
+        next: (t) => {
+          this.trend = t;
+          if (this.chartsReady) {
+            setTimeout(() => this.renderMonthlyChart(), 50);
+          }
+        },
+      });
+    }
+  }
+
+  private calculateAdminTotals(): void {
+    this.totalHours = this.projectData.reduce((sum, p) => sum + p.total_hours, 0);
+    this.totalAmount = this.projectData.reduce((sum, p) => sum + p.candidate_amount, 0);
   }
 
   onFilterChange(): void { this.load(); }
@@ -110,8 +162,9 @@ export class DashboardHome implements OnInit, AfterViewInit, OnDestroy {
 
   private renderMonthlyChart(): void {
     if (!this.monthlyChartRef) return;
+    // Show abbreviated month names for yearly view
     const labels = this.trend.map(t =>
-      new Date(t.year, t.month - 1).toLocaleString('default', { month: 'short', year: '2-digit' })
+      new Date(t.year, t.month - 1).toLocaleString('default', { month: 'short' })
     );
     const data = this.trend.map(t => t.total_hours);
 
@@ -141,7 +194,7 @@ export class DashboardHome implements OnInit, AfterViewInit, OnDestroy {
         maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
-          tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y} hrs` } },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.parsed?.y} hrs` } },
         },
         scales: {
           y: {
@@ -159,43 +212,113 @@ export class DashboardHome implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private renderProjectChart(): void {
-    if (!this.projectChartRef || !this.summary?.project_breakdown?.length) return;
-    const labels = this.summary.project_breakdown.map(p => p.project_name);
-    const data   = this.summary.project_breakdown.map(p => p.hours);
-    const colors = this.palette.slice(0, data.length);
+    if (!this.projectChartRef) return;
 
-    if (this.projectChart) {
-      this.projectChart.data.labels = labels;
-      (this.projectChart.data.datasets[0] as any).data = data;
-      (this.projectChart.data.datasets[0] as any).backgroundColor = colors;
-      this.projectChart.update('active');
-      return;
-    }
+    if (this.isAdmin) {
+      // Admin: grouped bar chart with candidate_amount vs project_amount
+      if (!this.projectData.length) return;
+      const labels = this.projectData.map(p => p.project_name);
+      const candidateAmounts = this.projectData.map(p => p.candidate_amount);
+      const projectAmounts = this.projectData.map(p => p.project_amount);
 
-    this.projectChart = new Chart(this.projectChartRef.nativeElement, {
-      type: 'doughnut',
-      data: {
-        labels,
-        datasets: [{
-          data,
-          backgroundColor: colors,
-          borderWidth: 2,
-          borderColor: '#fff',
-          hoverOffset: 10,
-        }],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: { color: '#6b7280', font: { size: 11 }, padding: 14, boxWidth: 12 },
-          },
-          tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed} hrs` } },
+      if (this.projectChart) {
+        this.projectChart.data.labels = labels;
+        (this.projectChart.data.datasets[0] as any).data = candidateAmounts;
+        (this.projectChart.data.datasets[1] as any).data = projectAmounts;
+        this.projectChart.update('active');
+        return;
+      }
+
+      this.projectChart = new Chart(this.projectChartRef.nativeElement, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Candidate Amount',
+              data: candidateAmounts,
+              backgroundColor: 'rgba(59,130,246,0.75)',
+              borderColor: '#3b82f6',
+              borderWidth: 1,
+              borderRadius: 4,
+            },
+            {
+              label: 'Project Amount',
+              data: projectAmounts,
+              backgroundColor: 'rgba(16,185,129,0.75)',
+              borderColor: '#10b981',
+              borderWidth: 1,
+              borderRadius: 4,
+            },
+          ],
         },
-        cutout: '68%',
-      },
-    });
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: { color: '#6b7280', font: { size: 12 }, padding: 14 },
+            },
+            tooltip: {
+              callbacks: {
+                label: ctx => `${ctx.dataset.label}: ₹${ctx.parsed?.y?.toFixed(2)}`,
+              },
+            },
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(0,0,0,0.05)' },
+              ticks: { color: '#6b7280', font: { size: 11 } },
+            },
+            x: {
+              grid: { display: false },
+              ticks: { color: '#6b7280', font: { size: 11 } },
+            },
+          },
+        },
+      });
+    } else {
+      // Candidate: doughnut chart with hours by project
+      if (!this.summary?.project_breakdown?.length) return;
+      const labels = this.summary.project_breakdown.map(p => p.project_name);
+      const data   = this.summary.project_breakdown.map(p => p.hours);
+      const colors = this.palette.slice(0, data.length);
+
+      if (this.projectChart) {
+        this.projectChart.data.labels = labels;
+        (this.projectChart.data.datasets[0] as any).data = data;
+        (this.projectChart.data.datasets[0] as any).backgroundColor = colors;
+        this.projectChart.update('active');
+        return;
+      }
+
+      this.projectChart = new Chart(this.projectChartRef.nativeElement, {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [{
+            data,
+            backgroundColor: colors,
+            borderWidth: 2,
+            borderColor: '#fff',
+            hoverOffset: 10,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { color: '#6b7280', font: { size: 11 }, padding: 14, boxWidth: 12 },
+            },
+            tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed} hrs` } },
+          },
+          cutout: '68%',
+        },
+      });
+    }
   }
 }

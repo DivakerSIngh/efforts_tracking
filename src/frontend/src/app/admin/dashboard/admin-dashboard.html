@@ -1,0 +1,122 @@
+<div class="admin-dashboard-container">
+
+  <!-- Page Header -->
+  <div class="page-hero">
+    <div class="page-hero-text">
+      <h2>Admin Dashboard</h2>
+      <p>Project-wise efforts and billing summary for the selected period.</p>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <div class="filter-select-wrap">
+      <div class="filter-label">Month</div>
+      <select class="filter-select" [(ngModel)]="selectedMonth" (change)="onFilterChange()">
+        <option *ngFor="let m of months" [ngValue]="m.value">{{ m.label }}</option>
+      </select>
+    </div>
+    <div class="filter-select-wrap filter-year">
+      <div class="filter-label">Year</div>
+      <select class="filter-select" [(ngModel)]="selectedYear" (change)="onFilterChange()">
+        <option *ngFor="let y of years" [ngValue]="y">{{ y }}</option>
+      </select>
+    </div>
+    <div class="filter-actions">
+      <button class="btn-filter-search" (click)="onFilterChange()">
+        <mat-icon>search</mat-icon>
+        SEARCH
+      </button>
+      <button class="btn-filter-reset" (click)="resetFilter()" title="Reset to current month">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <mat-progress-bar *ngIf="loading" mode="indeterminate" class="page-loader"></mat-progress-bar>
+
+  <ng-container *ngIf="projectData.length">
+
+    <!-- Summary Stats -->
+    <div class="summary-stats">
+      <mat-card class="stat-card hours-card">
+        <mat-card-content>
+          <div class="card-inner">
+            <div class="card-icon-wrap"><mat-icon>schedule</mat-icon></div>
+            <div class="card-body">
+              <div class="stat-value">{{ totalHours | number:'1.1-1' }}</div>
+              <div class="stat-label">Total Hours</div>
+              <div class="stat-sub">{{ getMonthName(selectedMonth) }} {{ selectedYear }}</div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card amount-card">
+        <mat-card-content>
+          <div class="card-inner">
+            <div class="card-icon-wrap"><mat-icon>account_balance_wallet</mat-icon></div>
+            <div class="card-body">
+              <div class="stat-value">₹{{ totalAmount | number:'1.2-2' }}</div>
+              <div class="stat-label">Total Amount</div>
+              <div class="stat-sub">All Candidates</div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Project-wise Chart -->
+    <mat-card class="chart-card">
+      <mat-card-content>
+        <div class="chart-header">
+          <div class="section-title">
+            <mat-icon>bar_chart</mat-icon>
+            <span>Project-wise Efforts & Billing</span>
+          </div>
+          <span class="chart-sub">{{ getMonthName(selectedMonth) }} {{ selectedYear }}</span>
+        </div>
+        <div class="chart-canvas-wrap">
+          <canvas #projectChartRef width="600" height="300"></canvas>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Project Details Table -->
+    <mat-card class="table-card">
+      <mat-card-content>
+        <h3>Project Details</h3>
+        <div class="table-scroll">
+          <table class="projects-table">
+            <thead>
+              <tr>
+                <th>Project Name</th>
+                <th>Candidates</th>
+                <th>Total Hours</th>
+                <th>Candidate Amount</th>
+                <th>Project Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let project of projectData">
+                <td class="proj-name">{{ project.project_name }}</td>
+                <td class="text-center">{{ project.total_candidates }}</td>
+                <td class="text-center">{{ project.total_hours | number:'1.1-1' }}</td>
+                <td class="amount">₹{{ project.candidate_amount | number:'1.2-2' }}</td>
+                <td class="amount highlight">₹{{ project.project_amount | number:'1.2-2' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+  </ng-container>
+
+  <!-- Empty state -->
+  <div *ngIf="!loading && !projectData.length" class="no-data">
+    <mat-icon>inbox</mat-icon>
+    <p>No project data for {{ getMonthName(selectedMonth) }} {{ selectedYear }}.</p>
+  </div>
+
+</div>
