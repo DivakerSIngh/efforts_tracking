@@ -3,8 +3,9 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, switchMap, throwError, BehaviorSubject, filter, take } from 'rxjs';
 import { TokenStorageService } from './token-storage';
+import { environment } from '../../environments/environment';
 
-const REFRESH_URL = '/api/auth/refresh';
+const REFRESH_URL = `${environment.apiUrl}/auth/refresh`;
 
 // Shared state across interceptor calls to handle concurrent 401s
 let isRefreshing = false;
