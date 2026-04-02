@@ -1,10 +1,11 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, Inject, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { CommonModule } from '@angular/common';
 import { TokenStorageService } from '../../core/token-storage';
+import { AuthService } from '../../core/auth';
 
 interface NavItem {
   label: string;
@@ -26,7 +27,7 @@ interface NavItem {
 export class Sidebar {
   @Input() collapsed = false;
   @Output() toggleCollapse = new EventEmitter<void>();
-
+  authService = inject(AuthService );
   navItems: NavItem[] = [
     {
       label: 'Dashboard', icon: 'dashboard', route: '/dashboard',
@@ -57,7 +58,7 @@ export class Sidebar {
   constructor(private tokenStorage: TokenStorageService) {}
 
   get visibleItems(): NavItem[] {
-    const role = this.tokenStorage.getUser()?.role;
+    const role = this.authService.getCurrentUser()?.role;// || this.tokenStorage.getUser()?.role;
     return this.navItems.filter(item => !item.role || item.role === role);
   }
 }

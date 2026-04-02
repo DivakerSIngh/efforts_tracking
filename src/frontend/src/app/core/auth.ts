@@ -1,51 +1,68 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { LoginRequest, TokenResponse, CurrentUser } from './models';
-import { TokenStorageService } from './token-storage';
-import { environment } from '../../environments/environment';
-
-const API = `${environment.apiUrl}/auth`;
+import { FirebaseAuthService } from './firebase-auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
   constructor(
-    private http: HttpClient,
+    private firebaseAuthService: FirebaseAuthService,
     private router: Router,
-    private tokenStorage: TokenStorageService,
   ) {}
 
+  /**
+   * Login with Firebase
+   */
   login(credentials: LoginRequest): Observable<TokenResponse> {
-    return this.http.post<TokenResponse>(`${API}/login`, credentials).pipe(
-      tap(res => {
-        this.tokenStorage.saveToken(res.access_token);
-        this.tokenStorage.saveRefreshToken(res.refresh_token);
-        this.tokenStorage.saveUser({
-          user_id: res.user_id,
-          email: credentials.email,
-          role: res.role,
-          full_name: res.full_name,
-        });
-      }),
+    return this.firebaseAuthService.login(credentials.email, credentials.password).pipe(
+      map(res => ({
+        access_token: res.access_token,
+        refresh_token: res.refresh_token,
+        token_type: res.token_type || 'Bearer',
+        role: res.role || 'candidate',
+        user_id: res.user_id,
+        full_name: res.full_name || credentials.email
+      } as TokenResponse))
     );
   }
 
+  /**
+   * Logout
+   */
   logout(): void {
-    this.tokenStorage.clear();
-    this.router.navigate(['/auth/login']);
+    this.firebaseAuthService.logout().subscribe(() => {
+      this.router.navigate(['/auth/login']);
+    });
   }
 
+  /**
+   * Get current user
+   */
   getCurrentUser(): CurrentUser | null {
-    return this.tokenStorage.getUser();
+    return this.firebaseAuthService.getCurrentUser();
   }
 
+  /**
+   * Check if user is logged in
+   */
   isLoggedIn(): boolean {
-    return this.tokenStorage.isLoggedIn();
+    return this.firebaseAuthService.isAuthenticated();
   }
 
+  /**
+   * Get user role
+   */
   getRole(): string | null {
-    return this.tokenStorage.getUser()?.role ?? null;
+    return this.firebaseAuthService.getCurrentUser()?.role ?? null;
+  }
+
+  /**
+   * Watch auth state changes
+   */
+  watchAuthState(): Observable<CurrentUser | null> {
+    return this.firebaseAuthService.currentUser$;
   }
 }

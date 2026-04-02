@@ -48,12 +48,16 @@ export class Login {
     this.loading = true;
 
     this.authService.login(this.form.getRawValue() as any).subscribe({
-      next: res => {
+      next: () => {
         this.loading = false;
-        this.router.navigate([res.role === 'admin' ? '/admin' : '/dashboard']);
+        const user = this.authService.getCurrentUser();
+        if (user) {
+          this.router.navigate([user.role === 'admin' ? '/admin' : '/dashboard']);
+        }
       },
-      error: () => {
+      error: (error) => {
         this.loading = false;
+        console.error('Login error:', error);
         this.snackBar.open('Invalid email or password', 'Close', { duration: 4000 });
       },
     });

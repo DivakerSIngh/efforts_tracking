@@ -1,20 +1,17 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Candidate, CandidateUpdate } from './models';
-import { environment } from '../../environments/environment';
+import { FirebaseCandidateService } from './firebase-candidate.service';
 
 @Injectable({ providedIn: 'root' })
 export class CandidateService {
-  private apiUrl = `${environment.apiUrl}/candidates`;
-
-  constructor(private http: HttpClient) {}
+  constructor(private firebaseCandidateService: FirebaseCandidateService) {}
 
   getMyProfile(): Observable<Candidate> {
-    return this.http.get<Candidate>(`${this.apiUrl}/me`);
+    return this.firebaseCandidateService.getMyProfile();
   }
 
   updateMyProfile(data: CandidateUpdate): Observable<Candidate> {
-    return this.http.put<Candidate>(`${this.apiUrl}/me`, data);
+    return this.firebaseCandidateService.updateMyProfile(data);
   }
 }

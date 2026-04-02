@@ -92,21 +92,28 @@ export class ReportView implements OnInit, AfterViewInit {
             email:           r.email,
             hourlyRate:      r.hourly_rate,
             fixedAmount:     r.fixed_amount,
-            totalHours:      r.total_hours,
-            totalAmount:     r.total_amount,
+            totalHours:      0,
+            totalAmount:     0,
             projectsSummary: '',
             projects:        [],
           },
           projectItems: [],
         });
       }
-      map.get(r.candidate_id)!.projectItems.push({ name: r.project_name, hours: r.project_hours });
+      const entry = map.get(r.candidate_id)!;
+      entry.group.totalHours += r.total_hours;
+      entry.projectItems.push({ name: r.project_name, hours: r.total_hours });
     }
-    return Array.from(map.values()).map(({ group, projectItems }) => ({
-      ...group,
-      projects: projectItems,
-      projectsSummary: projectItems.map(p => `${p.name} (${p.hours}h)`).join(' · '),
-    }));
+    return Array.from(map.values()).map(({ group, projectItems }) => {
+      // Recalculate amount based on aggregated hours
+      const totalAmount = group.totalHours * group.hourlyRate + group.fixedAmount;
+      return {
+        ...group,
+        totalAmount: totalAmount,
+        projects: projectItems,
+        projectsSummary: projectItems.map(p => `${p.name} (${p.hours}h)`).join(' · '),
+      };
+    });
   }
 
   exportExcel(): void {

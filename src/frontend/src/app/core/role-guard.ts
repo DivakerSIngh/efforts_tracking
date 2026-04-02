@@ -1,13 +1,13 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router, ActivatedRouteSnapshot } from '@angular/router';
-import { TokenStorageService } from './token-storage';
+import { AuthService } from './auth';
 
 export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
-  const tokenStorage = inject(TokenStorageService);
+  const authService = inject(AuthService);
   const router = inject(Router);
 
   const requiredRole: string = route.data['role'];
-  const user = tokenStorage.getUser();
+  const user = authService.getCurrentUser();
 
   if (user && user.role === requiredRole) {
     return true;

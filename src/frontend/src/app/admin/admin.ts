@@ -1,62 +1,57 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Candidate, CandidateCreate, CandidateUpdate, Project, ProjectCreate, ProjectUpdate, TimesheetEntry } from '../core/models';
-import { environment } from '../../environments/environment';
+import { FirebaseAdminService } from '../core/firebase-admin.service';
 
 @Injectable({ providedIn: 'root' })
 export class AdminService {
-  private projectsUrl = `${environment.apiUrl}/projects`;
-  private candidatesUrl = `${environment.apiUrl}/candidates`;
-  private reportUrl = `${environment.apiUrl}/report`;
-
-  constructor(private http: HttpClient) {}
+  constructor(private firebaseAdminService: FirebaseAdminService) {}
 
   // ── Projects ────────────────────────────────────────────────────
   getProjects(): Observable<Project[]> {
-    return this.http.get<Project[]>(`${this.projectsUrl}`);
+    return this.firebaseAdminService.getProjects();
   }
 
   createProject(data: ProjectCreate): Observable<Project> {
-    return this.http.post<Project>(`${this.projectsUrl}`, data);
+    return this.firebaseAdminService.createProject(data);
   }
 
   updateProject(projectId: number, data: ProjectUpdate): Observable<Project> {
-    return this.http.put<Project>(`${this.projectsUrl}/${projectId}`, data);
+    return this.firebaseAdminService.updateProject(projectId, data);
   }
 
   // ── Candidates ──────────────────────────────────────────────────
   getCandidates(): Observable<Candidate[]> {
-    return this.http.get<Candidate[]>(`${this.candidatesUrl}`);
+    return this.firebaseAdminService.getCandidates();
   }
 
   createCandidate(data: CandidateCreate): Observable<Candidate> {
-    return this.http.post<Candidate>(`${this.candidatesUrl}`, data);
+    return this.firebaseAdminService.createCandidate(data);
   }
 
   updateCandidate(userId: number, data: CandidateUpdate): Observable<Candidate> {
-    return this.http.put<Candidate>(`${this.candidatesUrl}/${userId}`, data);
+    return this.firebaseAdminService.updateCandidate(userId, data);
   }
 
   setCandidateStatus(userId: number, isActive: boolean): Observable<void> {
-    return this.http.patch<void>(`${this.candidatesUrl}/${userId}/status?is_active=${isActive}`, {});
+    return this.firebaseAdminService.setCandidateStatus(userId, isActive);
   }
 
   getCandidateTimesheet(userId: number, month: number, year: number): Observable<TimesheetEntry[]> {
-    return this.http.get<TimesheetEntry[]>(`${this.candidatesUrl}/${userId}/timesheet?month=${month}&year=${year}`);
+    return this.firebaseAdminService.getCandidateTimesheet(userId, month, year);
   }
 
   getCandidateProjects(candidateId: number): Observable<Project[]> {
-    return this.http.get<Project[]>(`${this.candidatesUrl}/${candidateId}/projects`);
+    return this.firebaseAdminService.getCandidateProjects(candidateId);
   }
 
   // ── Assignments ─────────────────────────────────────────────────
   assignProject(candidateId: number, projectId: number): Observable<void> {
-    return this.http.post<void>(`${this.projectsUrl}/assign`, { candidate_id: candidateId, project_id: projectId });
+    return this.firebaseAdminService.assignProject(candidateId, projectId);
   }
 
   // ── Admin Reports ───────────────────────────────────────────────
   getAdminProjectReport(month: number, year: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.reportUrl}/admin/projects?month=${month}&year=${year}`);
+    return this.firebaseAdminService.getAdminProjectReport(month, year);
   }
 }

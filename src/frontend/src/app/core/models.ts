@@ -13,7 +13,8 @@ export interface TokenResponse {
 }
 
 export interface CurrentUser {
-  user_id: number;
+  uid?: string;  // Firebase UID (optional for backward compatibility)
+  user_id: number;  // SQL user ID from Firestore
   email: string;
   role: string;
   full_name: string;
@@ -94,7 +95,7 @@ export interface TimesheetEntryCreate {
 }
 
 export interface TimesheetEntryUpdate {
-  hours: number;
+  hours?: number | null;
   remarks?: string;
 }
 
