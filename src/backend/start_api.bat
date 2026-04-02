@@ -95,8 +95,8 @@ echo Starting EffortTracking API...
 echo ===============================================
 echo.
 echo API will be available at:
-echo   Local:    http://localhost:8000
-echo   API Docs: http://localhost:8000/docs
+echo   Local:    http://localhost:8084
+echo   API Docs: http://localhost:8084/docs
 echo.
 echo If errors appear below, check:
 echo   1. Database connection in .env file
@@ -108,7 +108,7 @@ echo ===============================================
 echo.
 
 REM Start uvicorn with better error handling
-python -m uvicorn main:app --host 0.0.0.0 --port 8000 --log-level info
+python -m uvicorn main:app --host 0.0.0.0 --port 8084 --log-level info
 
 REM If we get here, API has stopped
 echo.

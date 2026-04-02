@@ -1,4 +1,5 @@
 from app.dashboard import repository
+from app.core.crypto import decrypt_decimal
 
 
 def get_dashboard_summary(candidate_id: int, month: int, year: int) -> dict:
@@ -16,15 +17,18 @@ def get_dashboard_summary(candidate_id: int, month: int, year: int) -> dict:
             "project_breakdown": [],
         }
     first = rows[0]
+    hourly_rate = decrypt_decimal(first["HourlyRate"])
+    fixed_amount = decrypt_decimal(first["FixedAmount"])
+    total_hours = float(first["TotalHours"])
     return {
         "candidate_id": first["CandidateId"],
         "full_name": first["FullName"],
         "month": first["Month"],
         "year": first["Year"],
-        "total_hours": float(first["TotalHours"]),
-        "hourly_rate": float(first["HourlyRate"]),
-        "fixed_amount": float(first["FixedAmount"]),
-        "total_payment": float(first["TotalPayment"]),
+        "total_hours": total_hours,
+        "hourly_rate": hourly_rate,
+        "fixed_amount": fixed_amount,
+        "total_payment": round(total_hours * hourly_rate + fixed_amount, 2),
         "project_breakdown": [
             {
                 "project_id": r["ProjectId"],

@@ -10,6 +10,10 @@ class Settings(BaseSettings):
     JWT_REFRESH_EXPIRY_DAYS: int = 7
     ALLOWED_ORIGINS: List[str] = ["http://localhost:4200"]
 
+    # Field-level encryption key (Fernet URL-safe base64, 32-byte key)
+    # Generate with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+    FIELD_ENCRYPTION_KEY: str
+
     # SMTP (Phase 8)
     SMTP_HOST: str = "smtp.gmail.com"
     SMTP_PORT: int = 587
